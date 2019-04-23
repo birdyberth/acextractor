@@ -1,7 +1,7 @@
 from nltk import word_tokenize
 import subprocess
 
-f = open('ytcomments.xml','r')
+f = open('ytcomments/ytcomments1nov2017.xml','r')
 rawdata = f.readlines()
 f.close()
 longueur = len(rawdata)
@@ -35,7 +35,7 @@ for i in range(0, longueur):
                 comment = comment + rawdata[i+k]
             comment = comment + lastpart
             
-        q = comment.find("surdoué")
+        q = comment.find("?")
         if q >= 0:
             if len(comment) >= 50:
                 #print comment.decode('utf-8')
