@@ -4,6 +4,7 @@ from collections import Counter
 from operator import itemgetter
 
 def parsexml(filename):
+    print("Extraction des commentaires du fichier xml...")
     f = open(filename,'r')
     rawdata = f.readlines()
     f.close()
@@ -38,6 +39,9 @@ def parsexml(filename):
             
             entry = {'name':name,'userurl':userurl,'videourl':videourl,'comment':comment}
             listcom.append(entry)
+        if i % 100e3 == 0:
+            print(i,"commentaires ouverts")
+    
     return(listcom)
 
 def wordalizer(entry):
@@ -58,9 +62,9 @@ def wordalizer(entry):
         nbofpunc = wc['.']+wc[',']
         nbofexc = wc['!']+wc['?']
         nbofIFTHEN = wc['if']+wc['then']
-        spectrum = [nbofI/n,nbofIT/n,nbofWE/n,nbofTHEY/n,nbofpunc/n,nbofexc/n]
+        spectrum = [nbofI/n,nbofIT/n,nbofWE/n,nbofTHEY/n,nbofpunc/n,nbofexc/n,nbofIFTHEN/n]
         if spectrum[0] > 0 :
-            ACindex = (spectrum[1]+spectrum[2]+spectrum[3])/spectrum[0]
+            ACindex = (spectrum[1]+spectrum[2]+spectrum[3]+spectrum[6])/spectrum[0]
             if ACindex >= 1:
                 acfound = True
     return(ACindex)
@@ -89,13 +93,30 @@ def htmlout(filtcom):
             
 if __name__ == "__main__":
     listcom = parsexml('ytcomments/ytcomments1nov2017.xml')
+    print("Calcul de l'indice AC pour chaque commentaire...")
     filtcom=[]
+    i = 1
     for entry in listcom:
         acindex = wordalizer(entry)
-        if acindex >= 1:
+        if acindex >= 10:
             entry['acindex']=acindex
             filtcom.append(entry)
-    out = sorted(filtcom, key=itemgetter('acindex'), reverse=True)
+        if i % 1e3 == 0:
+            print(i,"commentaires analysés")
+        i = i + 1
+    print("Tri des commenatires selon l'indice AC...")
+    sortedcom = sorted(filtcom, key=itemgetter('acindex'), reverse=True) #Filtre les commentaires dans l'ordre du plus "AC" au moins
+    out=[]
+    lentry = {}
+    llentry = {}
+    lllentry = {}
+    for entry in sortedcom: #Retire les doublons
+        if (entry != lentry) and (entry != llentry) and (entry != lllentry):
+          out.append(entry)
+        lllentry = llentry
+        llentry = lentry
+        lentry = entry
+        
     htmlout(out)
 
 
