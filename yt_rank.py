@@ -3,6 +3,7 @@ import subprocess
 from collections import Counter
 from operator import itemgetter
 
+
 def parsexml(filename):
     print("Extraction des commentaires du fichier xml...")
     f = open(filename,'r')
@@ -41,7 +42,6 @@ def parsexml(filename):
             listcom.append(entry)
         if i % 100e3 == 0:
             print(i,"commentaires ouverts")
-    
     return(listcom)
 
 def wordalizer(entry):
@@ -49,7 +49,6 @@ def wordalizer(entry):
     acfound = False
     ACindex = 0
     #Mettre aussi un détecteur de caps pour les émotions
-    #Trouver une façon de retirer les doublons
     #Trouver une façon de cliquer sur la vidéo et que ça retrouve le commentaire
     tkcom = word_tokenize(comment.lower()) #Prend les commentaires, les mets en lowercase, sort des tokens de mots 
     n = len(tkcom)
@@ -81,28 +80,27 @@ def htmlout(filtcom):
         f.write(str(round(entry['acindex'])))
         f.write('\n<a href=')
         f.write(entry['videourl'])
-        f.write(' target=_blank>vidéo</a></td>\n    <td>')
+        #f.write(' target=_blank>vidéo</a></td>\n    <td>')
+        f.write('>vidéo</a></td>\n    <td>')
         f.write(entry['comment'])
         f.write('</td>\n  </tr>')
     
     f.write('</table>\n\n</body>\n</html>')
     f.close()
-
-    subprocess.run(["firefox","commentaires_tries.html"]) #Part firefox automatiquement pour afficher les commentaires trouvés
-            
-            
-if __name__ == "__main__":
-    listcom = parsexml('ytcomments/ytcomments1nov2017.xml')
+    #subprocess.run(["firefox","commentaires_tries.html"]) #Part firefox automatiquement pour afficher les commentaires trouvés
+    
+def comsorter(listcom):
     print("Calcul de l'indice AC pour chaque commentaire...")
     filtcom=[]
     i = 1
+    N = len(listcom)
     for entry in listcom:
         acindex = wordalizer(entry)
         if acindex >= 10:
             entry['acindex']=acindex
             filtcom.append(entry)
         if i % 1e3 == 0:
-            print(i,"commentaires analysés")
+            print(round(float(i)/N*100),"% des commentaires analysés")
         i = i + 1
     print("Tri des commenatires selon l'indice AC...")
     sortedcom = sorted(filtcom, key=itemgetter('acindex'), reverse=True) #Filtre les commentaires dans l'ordre du plus "AC" au moins
@@ -116,8 +114,13 @@ if __name__ == "__main__":
         lllentry = llentry
         llentry = lentry
         lentry = entry
-        
+    return(out)
+            
+            
+if __name__ == "__main__":
+    listcom = parsexml('ytcomments/28-04-2019.xml')
+    out = comsorter(listcom)
     htmlout(out)
-
+    
 
 
